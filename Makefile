@@ -17,8 +17,8 @@ ROLES=gantsign.golang geerlingguy.php-versions jhu-sheridan-libraries.postfix-sm
 COLLECTIONS=community/general ansible/posix community/docker community/mysql
 
 # Required bins and packages - if any bins are missing, it installs all packages
-BINS=$(ANSBIN) /usr/bin/vim /usr/bin/ping /usr/bin/netstat /usr/bin/wget /usr/bin/unzip
-PKGS=ansible vim iputils-ping net-tools wget unzip
+BINS=$(ANSBIN) /usr/bin/vim /usr/bin/ping /usr/bin/netstat /usr/bin/wget /usr/bin/unzip /usr/bin/uuid
+PKGS=ansible vim iputils-ping net-tools wget unzip uuid
 
 ANSIBLE_HOST_KEY_CHECKING=False
 export ANSIBLE_HOST_KEY_CHECKING

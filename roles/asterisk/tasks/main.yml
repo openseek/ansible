@@ -1,0 +1,12 @@
+---
+- name: Install asterisk packages
+  package:
+    name: [
+      "asterisk-config",
+      "asterisk-core-sounds-en",
+      "asterisk-core-sounds-en-g722",
+      "asterisk-modules",
+      "asterisk-moh-opsound-gsm",
+      ]
+
+

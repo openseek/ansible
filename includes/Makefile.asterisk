@@ -1,0 +1,39 @@
+ASTCFGFILES=$(CONFDIR)/asterisk.extip $(CONFDIR)/asterisk.aripass $(CONFDIR)/asterisk.ariuser
+ASTYAML=$(GROUPVARS)/all/asterisk.yaml
+
+.PHONY: asterisk
+asterisk: $(ASTYAML)
+	@echo "Current asterisk config:"
+	@echo " - External IP (for PJSIP): $$(cat $(CONFDIR)/asterisk.extip)"
+	@echo " - Asterisk ARI Username: $$(cat $(CONFDIR)/asterisk.ariuser)"
+	@echo " - Asterisk ARI Password: $$(cat $(CONFDIR)/asterisk.aripass)"
+	@echo ""
+	@echo "Run \`make astextip\` to update the Asterisk External IP address"
+
+$(ASTYAML): $(ASTCFGFILES)
+	@echo 'astvars:' > $@
+	@for s in $(ASTCFGFILES); do echo "  $${s##*.}: '$$(cat $$s)'"; done >> $@
+
+.PHONY: astextip
+astextip $(CONFDIR)/asterisk.extip:
+	@MYIPS=$$(ip -o addr | egrep -v '(\ lo|\ docker)' | awk '/inet / { print $$4 }' | cut -d/ -f1 | paste -sd ','); \
+		echo "Known IPs on this system: $$MYIPS"; \
+		CUR=$$(cat $(CONFDIR)/asterisk.extip 2>/dev/null); \
+		if [ "$$CUR" ]; then \
+			PR="External IP Address for SIP (Currently $$CUR): "; else \
+			CUR=$$(echo $$MYIPS | cut -d, -f1); \
+			PR="External IP Address for SIP (Default $$CUR): "; \
+		fi; \
+		read -e -p "$$PR" i; \
+		if [ ! "$$i" ]; then i=$$CUR; fi; \
+		echo "Setting asterisk external ip to be $$i"; \
+		echo $$i > $(CONFDIR)/asterisk.extip
+
+$(CONFDIR)/asterisk.ariuser:
+	@echo asterisk > $@
+
+# Generates a uuid and takes the last 15 chars, which should always
+# be the 'most' random.
+$(CONFDIR)/asterisk.aripass: | /usr/bin/uuid
+	@uuid | cut -c25- > $@
+

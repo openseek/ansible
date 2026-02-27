@@ -20,12 +20,17 @@ asterisk: $(ASTYAML) $(PEERSYAML)
 	@echo "Edit the file $(EXTRAPEERS) to add additional PJSIP peers"
 	@echo ""
 	@echo "Run \`make astinstall\` to install or update asterisk on this machine"
+	@echo "Run \`make astupdate\` to only update core asterisk files, after astinstall has been run at least once"
 
 .PHONY: astinstall
-astinstall: $(ASTYAML)
+astinstall: $(ASTYAML) $(PEERSYAML)
 	@echo Installing asterisk on localhost
-	ansible-playbook -i localhost, asterisk.yml
+	ansible-playbook -i localhost, asterisk.yml -e uagent=$(UAGENT)
 
+.PHONY: astupdate
+astupdate: $(ASTYAML) $(PEERSYAML)
+	@echo Updating core asterisk config files only
+	ansible-playbook -i localhost, asterisk.yml -e fastupdate=true -e uagent=$(UAGENT)
 
 # Only create this if it doesn't exist
 $(EXTRAPEERS):

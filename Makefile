@@ -37,6 +37,9 @@ CONFDIR=$(ANSDIR)/config
 .PHONY: setup
 setup: $(BINS) $(GITCONFIG) $(GROUPVARS)/all/cloudflare.yaml ansible-packages /etc/rc.local fixvim
 
+AVERS=1.0
+UAGENT=AVA-Endpoint-v$(AVERS)
+
 include $(wildcard includes/Makefile.*)
 
 .PHONY: bins

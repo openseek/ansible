@@ -1,4 +1,4 @@
-ASTCFGFILES=$(CONFDIR)/asterisk.extip $(CONFDIR)/asterisk.aripass $(CONFDIR)/asterisk.ariuser
+ASTCFGFILES=$(CONFDIR)/asterisk.extip $(CONFDIR)/asterisk.aripass $(CONFDIR)/asterisk.ariuser $(CONFDIR)/asterisk.httpbind
 ASTYAML=$(GROUPVARS)/all/asterisk.yaml
 
 .PHONY: asterisk
@@ -7,8 +7,11 @@ asterisk: $(ASTYAML)
 	@echo " - External IP (for PJSIP): $$(cat $(CONFDIR)/asterisk.extip)"
 	@echo " - Asterisk ARI Username: $$(cat $(CONFDIR)/asterisk.ariuser)"
 	@echo " - Asterisk ARI Password: $$(cat $(CONFDIR)/asterisk.aripass)"
+	@echo " - Asterisk HTTP Bind: $$(cat $(CONFDIR)/asterisk.httpbind)"
 	@echo ""
 	@echo "Run \`make astextip\` to update the Asterisk External IP address"
+	@echo "Run \`make bindall\` to allow access from a remote machine"
+	@echo "  (Delete the file $(CONFDIR)/asterisk.httpbind to set it back to localonly)"
 
 $(ASTYAML): $(ASTCFGFILES)
 	@echo 'astvars:' > $@
@@ -37,3 +40,11 @@ $(CONFDIR)/asterisk.ariuser:
 $(CONFDIR)/asterisk.aripass: | /usr/bin/uuid
 	@uuid | cut -c25- > $@
 
+.PHONY: bindall
+bindall:
+	@echo Updating httpbind to bind to all interfaces
+	@echo 0.0.0.0 > $(CONFDIR)/asterisk.httpbind
+	@make $(ASTYAML)
+
+$(CONFDIR)/asterisk.httpbind:
+	@echo 127.0.0.1 > $(CONFDIR)/asterisk.httpbind

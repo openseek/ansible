@@ -1,12 +1,27 @@
 ---
 - name: Install asterisk packages
   package:
-    name: [
-      "asterisk-config",
-      "asterisk-core-sounds-en",
-      "asterisk-core-sounds-en-g722",
-      "asterisk-modules",
-      "asterisk-moh-opsound-gsm",
-      ]
+    name: [ "asterisk", "asterisk-config", "asterisk-core-sounds-en", "asterisk-core-sounds-en-g722", "asterisk-modules", "asterisk-moh-opsound-gsm" ]
+
+- name:  Put main configuration files in place
+  template:
+    src: "{{ item }}"
+    dest: /etc/asterisk/
+    owner: "asterisk"
+    group: "asterisk"
+    mode: 0644
+  loop:
+    - ari.conf
+    - http.conf
+
+- name: Copy default config files into place
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/asterisk/"
+    owner: "asterisk"
+    group: "asterisk"
+    mode: 0644
+  with_fileglob:
+    - "defaults/*"
 
 

@@ -1,17 +1,39 @@
-ASTCFGFILES=$(CONFDIR)/asterisk.extip $(CONFDIR)/asterisk.aripass $(CONFDIR)/asterisk.ariuser $(CONFDIR)/asterisk.httpbind
+ASTCFGFILES=$(CONFDIR)/asterisk.extip $(CONFDIR)/asterisk.aripass $(CONFDIR)/asterisk.ariuser $(CONFDIR)/asterisk.httpbind $(CONFDIR)/asterisk.defpeeruser $(CONFDIR)/asterisk.defpeerpass
 ASTYAML=$(GROUPVARS)/all/asterisk.yaml
+PEERSYAML=$(GROUPVARS)/all/pjpeers.yaml
+EXTRAPEERS=$(CONFDIR)/additionalpeers.yaml
 
 .PHONY: asterisk
-asterisk: $(ASTYAML)
+asterisk: $(ASTYAML) $(PEERSYAML)
 	@echo "Current asterisk config:"
 	@echo " - External IP (for PJSIP): $$(cat $(CONFDIR)/asterisk.extip)"
 	@echo " - Asterisk ARI Username: $$(cat $(CONFDIR)/asterisk.ariuser)"
 	@echo " - Asterisk ARI Password: $$(cat $(CONFDIR)/asterisk.aripass)"
 	@echo " - Asterisk HTTP Bind: $$(cat $(CONFDIR)/asterisk.httpbind)"
+	@echo " - PJSIP Default peer username: $$(cat $(CONFDIR)/asterisk.defpeeruser)"
+	@echo " - PJSIP Default peer password: $$(cat $(CONFDIR)/asterisk.defpeerpass)"
 	@echo ""
 	@echo "Run \`make astextip\` to update the Asterisk External IP address"
 	@echo "Run \`make bindall\` to allow access from a remote machine"
 	@echo "  (Delete the file $(CONFDIR)/asterisk.httpbind to set it back to localonly)"
+	@echo ""
+	@echo "Edit the file $(EXTRAPEERS) to add additional PJSIP peers"
+	@echo ""
+	@echo "Run \`make astinstall\` to install or update asterisk on this machine"
+
+.PHONY: astinstall
+astinstall: $(ASTYAML)
+	@echo Installing asterisk on localhost
+	ansible-playbook -i localhost, asterisk.yml
+
+
+# Only create this if it doesn't exist
+$(EXTRAPEERS):
+	cp defaults/additionalpeers.yaml $@
+	
+$(PEERSYAML): $(EXTRAPEERS)
+	@echo Updating $@
+	@cp $< $@
 
 $(ASTYAML): $(ASTCFGFILES)
 	@echo 'astvars:' > $@
@@ -39,6 +61,12 @@ $(CONFDIR)/asterisk.ariuser:
 # be the 'most' random.
 $(CONFDIR)/asterisk.aripass: | /usr/bin/uuid
 	@uuid | cut -c25- > $@
+
+$(CONFDIR)/asterisk.defpeeruser: | /usr/bin/uuid
+	@uuid | cut -c25- > $@
+
+$(CONFDIR)/asterisk.defpeerpass: | /usr/bin/uuid
+	@uuid | tr -d '-' > $@
 
 .PHONY: bindall
 bindall:
